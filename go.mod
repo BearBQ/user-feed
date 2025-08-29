@@ -1,4 +1,4 @@
-module 8_final
+module user-feed
 
 go 1.24.6
 
