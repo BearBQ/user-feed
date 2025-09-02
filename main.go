@@ -1,13 +1,35 @@
 package main
 
 import (
+	"context"
 	"log"
+	"net/http"
+	"user-feed/db"
+	"user-feed/redis"
 
 	"github.com/joho/godotenv"
 )
 
+var ctx = context.Background()
+var err error
+
 func init() {
 	if err := godotenv.Load(); err != nil {
-		log.Fatalln("No .env file found")
+		log.Fatalf("No .env file found: %v", err)
 	}
+}
+
+func main() {
+
+	err = db.InitDB()
+	if err != nil {
+		log.Fatalf("Failed to connect postgres: %v", err)
+	}
+	err = redis.InitRedis(ctx)
+	if err != nil {
+		log.Fatalf("Failed to connect postgres: %v", err)
+	}
+
+	mux := http.NewServeMux()
+	_ = mux
 }
