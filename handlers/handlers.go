@@ -7,6 +7,9 @@ import (
 
 func HelloHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("работает ёпта")
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.Write([]byte("Привет скуфам"))
 }
 
 func FuckHandler(w http.ResponseWriter, r *http.Request) {
