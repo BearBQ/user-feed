@@ -11,9 +11,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var ctx = context.Background()
-var err error
-
 func init() {
 	if err := godotenv.Load(); err != nil {
 		log.Fatalf("No .env file found: %v", err)
@@ -21,12 +18,17 @@ func init() {
 }
 
 func main() {
-
-	err = db.InitDB()
+	var ctx = context.Background()
+	pgBase, err := db.NewDataBase()
 	if err != nil {
 		log.Fatalf("Failed to connect postgres: %v", err)
 	}
-	err = redis.InitRedis(ctx)
+	err = pgBase.AutoMigrate()
+	if err != nil {
+		log.Fatalf("Failed to migrate data postgres: %v", err)
+	}
+
+	redisClient, err := redis.InitRedis(ctx)
 	if err != nil {
 		log.Fatalf("Failed to connect postgres: %v", err)
 	}
@@ -35,4 +37,5 @@ func main() {
 	mux.HandleFunc("/", handlers.HelloHandler)
 
 	http.ListenAndServe(":8080", mux)
+	_ = redisClient
 }

@@ -2,10 +2,10 @@ package models
 
 import "gorm.io/gorm"
 
-type User struct {
+type Users struct {
 	gorm.Model
 	Name  string `json:"name"`
-	Posts []Post `json:"posts"`
+	Posts []Post `json:"posts" gorm:"foreignKey:UserID;references:ID"`
 }
 
 type Post struct {
