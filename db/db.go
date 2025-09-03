@@ -43,7 +43,6 @@ func NewDataBase() (*DataBasePostgres, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to postgres: %w", err)
 	}
-
 	log.Printf("подключение к базе postgres %s успешно", dbName)
 
 	return &DataBasePostgres{DB: db}, nil
