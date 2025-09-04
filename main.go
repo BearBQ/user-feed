@@ -20,6 +20,7 @@ func init() {
 func main() {
 	var ctx = context.Background()
 	pgBase, err := db.NewDataBase()
+
 	if err != nil {
 		log.Fatalf("Failed to connect postgres: %v", err)
 	}
@@ -32,10 +33,14 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to connect postgres: %v", err)
 	}
-
+	customHandler := handlers.NewCustomHandler(pgBase)
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", handlers.HelloHandler)
+	mux.HandleFunc("POST /user", customHandler.CreateUserHandler)
+	//mux.HandleFunc("POST /post", handlers.CreatePostHandler)
+	//mux.HandleFunc("GET /feed/{userID}", handlers.GetUserHandler)
 
 	http.ListenAndServe(":8080", mux)
+
+	log.Println("Сервер запущен")
 	_ = redisClient
 }

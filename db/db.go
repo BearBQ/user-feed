@@ -10,8 +10,55 @@ import (
 	"gorm.io/gorm"
 )
 
+type DataBase interface {
+	CreateUser(user *models.Users) error
+	CreatePost(post *models.Post) error
+	GetPosts(userID uint) (models.Users, error)
+	CheckUserExist(email string) (bool, error)
+	Close() error
+	AutoMigrate() error
+}
+
 type DataBasePostgres struct {
 	DB *gorm.DB
+}
+
+func (db *DataBasePostgres) CreateUser(user *models.Users) error {
+	result := db.DB.Create(user)
+	if result.Error != nil {
+		return fmt.Errorf("failed to create user: %w", result.Error)
+	}
+	return nil
+}
+
+func (db *DataBasePostgres) CheckUserExist(email string) (bool, error) {
+	var user models.Users
+	result := db.DB.Where("email = ?", email).First(&user)
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			return false, nil // Пользователь не найден
+		}
+		return false, fmt.Errorf("failed to check user existence: %w", result.Error)
+	}
+
+	return true, nil // Пользователь найден
+}
+
+func (db *DataBasePostgres) CreatePost(post *models.Post) error {
+	result := db.DB.Create(post)
+	if result.Error != nil {
+		return fmt.Errorf("failed to create user: %w", result.Error)
+	}
+	return nil
+}
+
+func (db *DataBasePostgres) GetPosts(userID uint) (models.Users, error) {
+	var user models.Users
+	result := db.DB.Preload("Posts").First(&user, userID)
+	if result.Error != nil {
+		return models.Users{}, fmt.Errorf("failed to get user posts: %w", result.Error)
+	}
+	return user, nil
 }
 
 // Close() закрывает соединение с постгрес
@@ -32,8 +79,6 @@ func (db *DataBasePostgres) AutoMigrate() error {
 	log.Println("Automigrate done")
 	return nil
 }
-
-//CloseConnection
 
 // NewDataBase() - создает подключение к базе данных Postgres
 func NewDataBase() (*DataBasePostgres, error) {
