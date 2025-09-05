@@ -1,19 +1,23 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
 	"user-feed/db"
 	"user-feed/models"
+	"user-feed/redis"
 )
 
 type CustomHandler struct {
-	db db.DataBase
+	db  db.DataBase
+	rs  redis.RedisBase
+	ctx context.Context
 }
 
-func NewCustomHandler(database db.DataBase) *CustomHandler {
-	return &CustomHandler{db: database}
+func NewCustomHandler(ctx context.Context, database db.DataBase, redis redis.RedisBase) *CustomHandler {
+	return &CustomHandler{ctx: ctx, db: database, rs: redis}
 }
 
 func (h *CustomHandler) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -53,6 +57,12 @@ func (h *CustomHandler) CreateUserHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	log.Printf("Пользователь создан")
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"message": "Пользователь успешно создан",
+		"user_id": user.ID,
+	})
 }
 
 // func CreatePostHandler(w http.ResponseWriter, r *http.Request) {

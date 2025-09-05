@@ -33,7 +33,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to connect postgres: %v", err)
 	}
-	customHandler := handlers.NewCustomHandler(pgBase)
+	customHandler := handlers.NewCustomHandler(ctx, pgBase, redisClient)
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /user", customHandler.CreateUserHandler)
 	//mux.HandleFunc("POST /post", handlers.CreatePostHandler)
