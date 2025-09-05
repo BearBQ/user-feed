@@ -19,6 +19,7 @@ func init() {
 
 func main() {
 	var ctx = context.Background()
+
 	pgBase, err := db.NewDataBase()
 
 	if err != nil {
@@ -31,16 +32,19 @@ func main() {
 
 	redisClient, err := redis.InitRedis(ctx)
 	if err != nil {
-		log.Fatalf("Failed to connect postgres: %v", err)
+		log.Fatalf("Failed to connect redis: %v", err)
+	}
+
+	err = redisClient.ClearAllData(ctx)
+	if err != nil {
+		log.Fatalf("failed to clear redis")
 	}
 	customHandler := handlers.NewCustomHandler(ctx, pgBase, redisClient)
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /user", customHandler.CreateUserHandler)
-	//mux.HandleFunc("POST /post", handlers.CreatePostHandler)
-	//mux.HandleFunc("GET /feed/{userID}", handlers.GetUserHandler)
+	mux.HandleFunc("POST /post", customHandler.CreatePostHandler)
+	mux.HandleFunc("GET /feed/{userID}", customHandler.GetUserHandler)
 
 	http.ListenAndServe(":8080", mux)
 
-	log.Println("Сервер запущен")
-	_ = redisClient
 }

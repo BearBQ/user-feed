@@ -16,6 +16,7 @@ type RedisBase interface {
 	GetDataFromRedis(ctx context.Context, userID uint) ([]byte, error)
 	PushData(ctx context.Context, userID uint, data []byte) error
 	ClearData(ctx context.Context, userID uint) error
+	ClearAllData(ctx context.Context) error
 }
 
 type RedisClient struct {
@@ -65,7 +66,7 @@ func (rc *RedisClient) GetDataFromRedis(ctx context.Context, userID uint) ([]byt
 
 func (rc *RedisClient) PushData(ctx context.Context, userID uint, data []byte) error {
 	user := fmt.Sprintf("feed:%d", userID)
-	err := rc.Client.Set(ctx, user, data, 5*time.Minute)
+	err := rc.Client.Set(ctx, user, data, 5*time.Minute).Err()
 	if err != nil {
 		return fmt.Errorf("redis set error: %v", err)
 	}
@@ -77,10 +78,18 @@ func (rc *RedisClient) ClearData(ctx context.Context, userID uint) error {
 	err := rc.Client.Del(ctx, user).Err()
 	if err != nil {
 		if err == redis.Nil {
-			// Ключ не существует - это не ошибка для операции удаления
 			return nil
 		}
 		return fmt.Errorf("failed to delete key %d: %w", userID, err)
 	}
+	return nil
+}
+
+func (rc *RedisClient) ClearAllData(ctx context.Context) error {
+	err := rc.Client.FlushAll(ctx).Err()
+	if err != nil {
+		return fmt.Errorf("failed to flush all redis data: %w", err)
+	}
+	log.Println("All Redis data cleared successfully")
 	return nil
 }

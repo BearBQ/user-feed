@@ -22,5 +22,5 @@ type CreateUserRequest struct {
 
 type CreatePostRequest struct {
 	Content string `json:"content" validate:"required"`
-	USerID  uint   `json:"user_id" validate:"required"`
+	UserID  uint   `json:"user_id" validate:"required"`
 }
